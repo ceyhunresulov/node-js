@@ -16,6 +16,10 @@ const blogSchema = new Schema(
       type: String,
       require: true,
     },
+    img: {
+      type: String,
+      require: true,
+    },
   },
   { timestemps: true }
 );

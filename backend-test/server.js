@@ -1,6 +1,9 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const Blog = require("./modules/blog");
+const multer = require("multer");
+const path = require("path");
+const { dirname } = require("path");
 
 const app = express();
 
@@ -19,6 +22,28 @@ mongoose
   .catch((err) => {
     console.log(err);
   });
+
+// storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, "./public/uploads"));
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "" + path.extname(file.originalname));
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  if (true) {
+    cb(null, true);
+    console.log("filter isleyir");
+  } else {
+    cb(null, false);
+    console.log("error burdadir");
+  }
+};
+
+const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 app.get("/", (req, res) => {
   res.render("index");
@@ -39,10 +64,13 @@ app.get("/add", (req, res) => {
   res.render("add");
 });
 
-app.post("/add", (req, res) => {
-  console.log(req.body);
-  console.log("--------------------");
-  const blog = new Blog(req.body);
+app.post("/add", upload.single("image"), (req, res) => {
+  const blog = new Blog({
+    fName: req.body.fName,
+    lName: req.body.lName,
+    note: req.body.note,
+    img: req.file.filename,
+  });
 
   blog
     .save()
@@ -56,6 +84,15 @@ app.get("/admin", (req, res) => {
   Blog.find()
     .then((result) => {
       res.render("admin", { blogs: result });
+    })
+    .catch((err) => console.log(err));
+});
+
+app.delete("/admin/delete/:id", (req, res) => {
+  const id = req.params.id;
+  Blog.findByIdAndDelete(id)
+    .then((result) => {
+      res.json({ link: "admin" });
     })
     .catch((err) => console.log(err));
 });

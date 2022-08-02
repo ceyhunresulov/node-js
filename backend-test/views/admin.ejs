@@ -11,11 +11,26 @@
     <h1 class="admin-panel">admin panel</h1>
     <%blogs.forEach(blog=>{%>
     <ul class="add-form">
+      <img src="./uploads/<%=blog.img%>" alt="" width="100px" height="100px" />
       <li><%=blog.fName%></li>
       <li><%=blog.lName%></li>
       <li><%=blog.note%></li>
     </ul>
-    <button class="admin-delete">sil</button>
+    <button class="admin-delete" data-id="<%=blog._id%>">sil</button>
     <% })%>
+    <script>
+      const del = document.querySelectorAll(".admin-delete");
+      del.forEach((item) => {
+        item.addEventListener("click", (e) => {
+          const endpoint = `admin/delete/${item.dataset.id}`;
+          fetch(endpoint, {
+            method: "DELETE",
+          })
+            .then((res) => res.json())
+            .then((data) => (window.location.href = data.link))
+            .catch((err) => console.log("errr"));
+        });
+      });
+    </script>
   </body>
 </html>
